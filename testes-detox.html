@@ -62,7 +62,7 @@
       <div><label>Data</label><input type="date" id="h_data" oninput="updHdr()"></div>
       <div><label>Densidade (g/mL ou kg/L)</label><input type="number" step="0.0001" id="h_dens" oninput="updHdr()" placeholder="Ex: 1,30"></div>
       <div><label>Conc. de sólidos (%)</label><input type="number" step="0.01" id="h_psol" oninput="updHdr()" placeholder="Ex: 40"></div>
-      <div><label>Volume da amostra (mL)</label><input type="number" step="0.01" id="h_vol" oninput="updHdr()" placeholder="Ex: 2538"></div>
+      <div><label>Volume da amostra (mL) — calc. (massa ÷ densidade)</label><input id="h_vol" readonly></div>
       <div><label>Massa da amostra (kg)</label><input type="number" step="0.0001" id="h_massa" oninput="updHdr()" placeholder="Ex: 3,30"></div>
       <div><label>Massa de sólidos (kg) — calculada</label><input id="h_msol" readonly></div>
       <div><label>Dose PGDETOX (g/ton de sólidos)</label><input type="number" step="0.01" id="h_dose" oninput="updHdr()" placeholder="Ex: 350"></div>
@@ -163,11 +163,13 @@
     const t = curTest(); if(!t) return;
     t.nome = document.getElementById('h_nome').value;
     t.data = document.getElementById('h_data').value;
-    t.dens = val('h_dens'); t.psol = val('h_psol'); t.vol = val('h_vol'); t.massa = val('h_massa');
+    t.dens = val('h_dens'); t.psol = val('h_psol'); t.massa = val('h_massa');
+    t.vol = (t.dens>0) ? (t.massa*1000/t.dens) : 0;
     t.dose = val('h_dose'); t.cag = val('h_cag'); t.ratio = val('h_ratio') || 2;
     const w = document.getElementById('h_wad').value; t.wad = (w==='' ? null : val('h_wad'));
     const _pgr = document.getElementById('h_pgreal').value; t.pgreal = (_pgr==='' ? null : val('h_pgreal'));
     const _sol = massaSolidos(t);
+    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(t.vol,2) + ' mL') : '';
     document.getElementById('h_msol').value = br(_sol, 4) + ' kg';
     document.getElementById('h_pg').value = br(massaPG(t), 4) + ' g';
     document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol, 2) + ' g/ton') : '';
@@ -274,9 +276,11 @@
     const set=(id,v)=>document.getElementById(id).value = (v==null?'':v);
     if(!t){ ['h_nome','h_data','h_dens','h_psol','h_vol','h_massa','h_msol','h_dose','h_pg','h_pgreal','h_dosereal','h_cag','h_ratio','h_wad'].forEach(i=>set(i,'')); return; }
     set('h_nome',t.nome); set('h_data',t.data); set('h_dens',t.dens||''); set('h_psol',t.psol||'');
-    set('h_vol',t.vol||''); set('h_massa',t.massa||''); set('h_dose',t.dose||''); set('h_cag',t.cag||'');
+    set('h_massa',t.massa||''); set('h_dose',t.dose||''); set('h_cag',t.cag||'');
     set('h_ratio',t.ratio||2); set('h_wad', t.wad==null?'':t.wad); set('h_pgreal', t.pgreal==null?'':t.pgreal);
     const _sol = massaSolidos(t);
+    const _vol = (t.dens>0) ? (t.massa*1000/t.dens) : 0;
+    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(_vol,2)+' mL') : '';
     document.getElementById('h_msol').value = br(_sol,4)+' kg';
     document.getElementById('h_pg').value = br(massaPG(t),4)+' g';
     document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol,2)+' g/ton') : '';
