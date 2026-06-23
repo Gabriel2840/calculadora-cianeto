@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Cianeto — Titulação e Conversões</title>
+<style>
+  :root{ --navy:#16243f; --orange:#e8552d; --teal:#2e9e8f; --bg:#eef1f6; --line:#d8dde6; --muted:#7b8794; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--navy);
+    min-height:100vh;padding:24px 14px;display:flex;justify-content:center}
+  .wrap{width:100%;max-width:680px}
+  .card{background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(20,40,80,.08);
+    padding:22px;margin-bottom:18px;border:1px solid #eef0f4}
+  h1{font-size:20px;margin-bottom:2px}
+  h1 .b{color:var(--orange)}
+  .sub{color:var(--muted);font-size:13px}
+  .react{background:#f6f8fc;border:1px dashed var(--line);border-radius:8px;padding:8px 12px;
+    font-size:13px;color:#445;margin-bottom:14px}
+  h2{font-size:15px;margin:4px 0 14px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:520px){.grid{grid-template-columns:1fr}}
+  label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:5px}
+  input[type=number],input[type=text]{width:100%;padding:10px;border:1px solid var(--line);
+    border-radius:8px;font-size:15px;background:#fafbfc}
+  input:focus{outline:none;border-color:var(--orange);background:#fff}
+  .chkrow{display:flex;align-items:center;gap:10px;margin:6px 0 0}
+  .chkrow input{width:18px;height:18px}
+  .chkrow label{margin:0;font-size:14px;color:var(--navy)}
+  .dilbox{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:10px;background:#fafbfe}
+  .hidden{display:none}
+  .radios{display:flex;gap:18px;margin-bottom:12px;flex-wrap:wrap}
+  .radios label{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--navy);margin:0;font-weight:500}
+  .res{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:6px}
+  .res.two{grid-template-columns:1fr 1fr}
+  @media(max-width:520px){.res,.res.two{grid-template-columns:1fr}}
+  .metric{background:linear-gradient(135deg,var(--navy),#23365c);color:#fff;border-radius:10px;
+    padding:14px;text-align:center}
+  .metric.orange{background:linear-gradient(135deg,var(--orange),#cf471f)}
+  .metric.teal{background:linear-gradient(135deg,var(--teal),#25867a)}
+  .metric .v{font-size:21px;font-weight:700;line-height:1.1}
+  .metric .l{font-size:11px;opacity:.9;margin-top:5px}
+  .tag{display:inline-block;font-size:11px;background:#fff3cd;color:#8a6100;border-radius:10px;padding:2px 9px;margin-left:8px}
+  .err{color:#dc3545;font-size:13px;margin-top:8px;min-height:18px}
+  .note{font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5}
+  .foot{text-align:center;color:var(--muted);font-size:11px;margin-top:6px}
+  .tabs{display:flex;gap:8px;margin-top:16px}
+  .tab{flex:1;padding:11px;border:none;border-radius:8px;background:#eef1f6;color:#445;font-weight:700;cursor:pointer;font-size:14px}
+  .tab.active{background:var(--navy);color:#fff}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <h1>🧪 Calculadora de Cianeto <span class="b">— Liebig</span></h1>
+    <div class="sub">Beneficiamento · titulação com nitrato de prata e conversões de unidade</div>
+    <div class="tabs">
+      <button class="tab active" id="btn-titulacao" onclick="showTab('titulacao')">Titulação</button>
+      <button class="tab" id="btn-conversor" onclick="showTab('conversor')">Conversões (ppm → mol/L · %)</button>
+    </div>
+  </div>
+
+  <!-- ===================== ABA TITULAÇÃO ===================== -->
+  <div id="tab-titulacao">
+    <div class="card">
+      <div class="react">Reação: <b>2 CN⁻ + Ag⁺ → [Ag(CN)₂]⁻</b> &nbsp;→&nbsp; 1 mol de Ag⁺ titula 2 mols de CN⁻</div>
+      <h2>Dados da titulação</h2>
+      <div class="grid">
+        <div><label>Volume de AgNO₃ gasto (mL)</label>
+          <input type="number" id="vAg" step="0.01" min="0" placeholder="Ex: 0,51" oninput="calc()"></div>
+        <div><label>Concentração do AgNO₃ (mol/L)</label>
+          <input type="number" id="cAg" step="0.00001" min="0" value="0.02" oninput="calc()"></div>
+        <div><label>Volume da amostra titulada (mL)</label>
+          <input type="number" id="vAm" step="0.01" min="0" value="50" oninput="calc()"></div>
+        <div><label>CN⁻ por Ag⁺ (Liebig = 2)</label>
+          <input type="number" id="ratio" step="0.1" min="0" value="2" oninput="calc()"></div>
+      </div>
+      <div class="chkrow">
+        <input type="checkbox" id="dil" onchange="toggleDil();calc()">
+        <label for="dil">A amostra foi diluída antes de titular?</label>
+      </div>
+      <div class="dilbox hidden" id="dilbox">
+        <div class="radios">
+          <label><input type="radio" name="dmode" value="fator" checked onchange="toggleMode();calc()"> Fator de diluição</label>
+          <label><input type="radio" name="dmode" value="aliq" onchange="toggleMode();calc()"> Alíquota e volume total</label>
+        </div>
+        <div id="modeFator">
+          <label>Fator de diluição (ex.: 1:10 → 10)</label>
+          <input type="number" id="fator" step="0.1" min="1" value="10" oninput="calc()">
+        </div>
+        <div id="modeAliq" class="hidden">
+          <div class="grid">
+            <div><label>Alíquota (mL)</label><input type="number" id="aliq" step="0.01" min="0" placeholder="Ex: 5" oninput="calc()"></div>
+            <div><label>Volume total após diluir (mL)</label><input type="number" id="total" step="0.01" min="0" placeholder="Ex: 50" oninput="calc()"></div>
+          </div>
+          <div class="note" id="fatorCalc"></div>
+        </div>
+      </div>
+      <div class="err" id="err"></div>
+    </div>
+
+    <div class="card">
+      <h2>Resultado — solução titulada</h2>
+      <div class="res">
+        <div class="metric"><div class="v" id="r_mol">—</div><div class="l">mol/L</div></div>
+        <div class="metric orange"><div class="v" id="r_cn">—</div><div class="l">ppm CN⁻</div></div>
+        <div class="metric teal"><div class="v" id="r_nacn">—</div><div class="l">ppm NaCN</div></div>
+      </div>
+    </div>
+
+    <div class="card hidden" id="origCard">
+      <h2>Resultado — solução original <span class="tag" id="fatorTag"></span></h2>
+      <div class="res">
+        <div class="metric"><div class="v" id="o_mol">—</div><div class="l">mol/L</div></div>
+        <div class="metric orange"><div class="v" id="o_cn">—</div><div class="l">ppm CN⁻</div></div>
+        <div class="metric teal"><div class="v" id="o_nacn">—</div><div class="l">ppm NaCN</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== ABA CONVERSÕES ===================== -->
+  <div id="tab-conversor" class="hidden">
+    <div class="card">
+      <h2>Nitrato de prata — AgNO₃ <span class="sub">(MM 169,87 g/mol)</span></h2>
+      <label>Concentração em ppm (mg/L)</label>
+      <input type="number" id="ag_ppm" step="0.0001" min="0" placeholder="Ex: 1000" oninput="conv()">
+      <div class="res two" style="margin-top:14px">
+        <div class="metric"><div class="v" id="ag_mol">—</div><div class="l">mol/L</div></div>
+        <div class="metric orange"><div class="v" id="ag_pct">—</div><div class="l">% (m/v)</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Cianeto de sódio — NaCN <span class="sub">(MM 49,008 g/mol)</span></h2>
+      <label>Concentração em ppm (mg/L)</label>
+      <input type="number" id="nacn_ppm" step="0.0001" min="0" placeholder="Ex: 200" oninput="conv()">
+      <div class="res two" style="margin-top:14px">
+        <div class="metric"><div class="v" id="nacn_mol">—</div><div class="l">mol/L</div></div>
+        <div class="metric teal"><div class="v" id="nacn_pct">—</div><div class="l">% (m/v)</div></div>
+      </div>
+    </div>
+
+    <div class="note card">
+      <b>Como converte:</b> mol/L = ppm ÷ (1000 × massa molar). &nbsp; % (m/v) = ppm ÷ 10.000
+      (considera solução aquosa diluída, densidade ≈ 1 → <b>1% = 10.000 ppm</b>).
+    </div>
+  </div>
+
+  <div class="note card">
+    Massas molares: <b>CN⁻ = 26,018</b> · <b>NaCN = 49,008</b> · <b>AgNO₃ = 169,87</b> g/mol.<br>
+    ⚠️ Cianeto é altamente perigoso e estes são cálculos de <b>controle de processo</b>:
+    confira com a rotina/laboratório antes de usar como dado oficial.
+  </div>
+  <div class="foot">Aura Minerals · Beneficiamento — calculadora offline</div>
+
+</div>
+
+<script>
+  const MW_CN = 26.018, MW_NACN = 49.008, MW_AGNO3 = 169.87;
+  const SUP = {'-':'⁻','+':'','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  const sup = s => [...s].map(c => SUP[c] ?? c).join('');
+  const val = id => parseFloat((document.getElementById(id).value || '').toString().replace(',', '.'));
+  const br = (n, d) => n.toLocaleString('pt-BR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const molL = v => {
+    if (!isFinite(v) || v === 0) return '0';
+    const [m, e] = v.toExponential(4).split('e');
+    return m.replace('.', ',') + ' × 10' + sup(e);
+  };
+
+  function showTab(t){
+    document.getElementById('tab-titulacao').classList.toggle('hidden', t !== 'titulacao');
+    document.getElementById('tab-conversor').classList.toggle('hidden', t !== 'conversor');
+    document.getElementById('btn-titulacao').classList.toggle('active', t === 'titulacao');
+    document.getElementById('btn-conversor').classList.toggle('active', t === 'conversor');
+  }
+  function toggleDil(){
+    document.getElementById('dilbox').classList.toggle('hidden', !document.getElementById('dil').checked);
+    document.getElementById('origCard').classList.toggle('hidden', !document.getElementById('dil').checked);
+  }
+  function toggleMode(){
+    const m = document.querySelector('input[name=dmode]:checked').value;
+    document.getElementById('modeFator').classList.toggle('hidden', m !== 'fator');
+    document.getElementById('modeAliq').classList.toggle('hidden', m !== 'aliq');
+  }
+
+  // ---- Titulação ----
+  function calc(){
+    const err = document.getElementById('err');
+    const vAg = val('vAg'), cAg = val('cAg'), vAm = val('vAm'), ratio = val('ratio');
+    const setTit = (a,b,c) => { r_mol.textContent=a; r_cn.textContent=b; r_nacn.textContent=c; };
+    if (!(vAg > 0 && cAg > 0 && vAm > 0 && ratio > 0)) {
+      err.textContent = 'Preencha volume de AgNO₃, concentração, volume da amostra e a razão.';
+      setTit('—','—','—'); return;
+    }
+    err.textContent = '';
+    const nAg = cAg * (vAg / 1000);
+    const nCN = ratio * nAg;
+    const cTit = nCN / (vAm / 1000);
+    setTit(molL(cTit), br(cTit * MW_CN * 1000, 4), br(cTit * MW_NACN * 1000, 4));
+
+    if (document.getElementById('dil').checked) {
+      let fator = NaN;
+      const mode = document.querySelector('input[name=dmode]:checked').value;
+      if (mode === 'fator') {
+        fator = val('fator');
+      } else {
+        const aliq = val('aliq'), total = val('total');
+        if (aliq > 0 && total > 0) { fator = total / aliq;
+          document.getElementById('fatorCalc').textContent = 'Fator = ' + total + ' ÷ ' + aliq + ' = ' + br(fator, 4);
+        } else document.getElementById('fatorCalc').textContent = '';
+      }
+      if (fator > 0) {
+        const cO = cTit * fator;
+        document.getElementById('fatorTag').textContent = '× ' + br(fator, 2);
+        o_mol.textContent = molL(cO); o_cn.textContent = br(cO * MW_CN * 1000, 4); o_nacn.textContent = br(cO * MW_NACN * 1000, 4);
+      }
+    }
+  }
+
+  // ---- Conversões ppm -> mol/L e % ----
+  function conv(){
+    const um = (ppmId, mw, molId, pctId) => {
+      const p = val(ppmId);
+      if (!(p >= 0) || isNaN(p)) { document.getElementById(molId).textContent='—'; document.getElementById(pctId).textContent='—'; return; }
+      document.getElementById(molId).textContent = molL(p / (mw * 1000));
+      document.getElementById(pctId).textContent = br(p / 10000, 4) + ' %';
+    };
+    um('ag_ppm', MW_AGNO3, 'ag_mol', 'ag_pct');
+    um('nacn_ppm', MW_NACN, 'nacn_mol', 'nacn_pct');
+  }
+
+  calc(); conv();
+</script>
+</body>
+</html>
