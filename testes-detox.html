@@ -180,8 +180,11 @@
 
   function calcPoint(t, p){
     const fator = (p.dil && p.aliq>0 && p.total>0) ? (p.total/p.aliq) : 1;
-    const cMol = (p.vtit>0) ? (RATIO * t.cag * p.vag / p.vtit) * fator : 0;
-    return { fator, cMol, cnppm: cMol*MW_CN*1000, cnpct: cMol*MW_CN*1000/10000, naclppm: cMol*MW_NACN*1000, naclpct: cMol*MW_NACN*1000/10000 };
+    const cMolDil = (p.vtit>0) ? (RATIO * t.cag * p.vag / p.vtit) : 0;  // diluída (o que se titula)
+    const cMol = cMolDil * fator;                                       // original (× fator)
+    return { fator, cMolDil, cnppmDil: cMolDil*MW_CN*1000,
+      cMol, cnppm: cMol*MW_CN*1000, cnpct: cMol*MW_CN*1000/10000,
+      naclppm: cMol*MW_NACN*1000, naclpct: cMol*MW_NACN*1000/10000 };
   }
 
   function togglePDil(){ document.getElementById('pdilbox').classList.toggle('hidden', !document.getElementById('p_dil').checked); }
@@ -207,16 +210,16 @@
     const tb = document.getElementById('ptsTable');
     if(!t){ tb.innerHTML=''; return; }
     let h = `<tr><th>Tempo (min)</th><th>AgNO₃ (mL)</th><th>Vol. tit. (mL)</th><th>Diluição</th>
-      <th>CN⁻ mol/L</th><th>CN⁻ ppm</th><th>CN⁻ %</th><th>NaCN ppm</th><th>NaCN %</th><th></th></tr>`;
+      <th>CN⁻ ppm (diluída)</th><th>CN⁻ ppm (original)</th><th>CN⁻ mol/L (orig.)</th><th>CN⁻ %</th><th>NaCN ppm</th><th>NaCN %</th><th></th></tr>`;
     t.pontos.forEach((p,i)=>{
       const c = calcPoint(t,p);
       h += `<tr><td>${br(p.tempo,0)}</td><td>${br(p.vag,2)}</td><td>${br(p.vtit,2)}</td>
         <td>${p.dil ? ('×'+br(c.fator,2)) : '—'}</td>
-        <td>${molL(c.cMol)}</td><td>${br(c.cnppm,4)}</td><td>${br(c.cnpct,4)}</td>
+        <td>${br(c.cnppmDil,4)}</td><td><b>${br(c.cnppm,4)}</b></td><td>${molL(c.cMol)}</td><td>${br(c.cnpct,4)}</td>
         <td>${br(c.naclppm,4)}</td><td>${br(c.naclpct,4)}</td>
         <td><button class="btn danger sm" onclick="delPoint(${i})">🗑</button></td></tr>`;
     });
-    if(!t.pontos.length) h += `<tr><td colspan="10" style="text-align:center;color:#999">Nenhum ponto ainda.</td></tr>`;
+    if(!t.pontos.length) h += `<tr><td colspan="11" style="text-align:center;color:#999">Nenhum ponto ainda.</td></tr>`;
     tb.innerHTML = h;
     drawChart(t);
     drawAllChart();
@@ -311,7 +314,8 @@
       const pontos = [];
       DB.tests.forEach(t=>t.pontos.forEach(p=>{ const c=calcPoint(t,p);
         pontos.push({ Teste:t.nome, 'Tempo (min)':p.tempo, 'AgNO3 (mL)':p.vag, 'Vol. tit. (mL)':p.vtit,
-          'Fator dil.':c.fator, 'CN- mol/L':+c.cMol.toFixed(6), 'CN- ppm':+c.cnppm.toFixed(4), 'CN- %':+c.cnpct.toFixed(4),
+          'Fator dil.':c.fator, 'CN- ppm (diluida)':+c.cnppmDil.toFixed(4), 'CN- ppm (original)':+c.cnppm.toFixed(4),
+          'CN- mol/L (orig)':+c.cMol.toFixed(6), 'CN- %':+c.cnpct.toFixed(4),
           'NaCN ppm':+c.naclppm.toFixed(4), 'NaCN %':+c.naclpct.toFixed(4), 'CN WAD (ppm)':t.wad }); }));
       XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pontos.length?pontos:[{Teste:'(vazio)'}]), 'Pontos');
       XLSX.writeFile(wb, 'testes-detox.xlsx');
