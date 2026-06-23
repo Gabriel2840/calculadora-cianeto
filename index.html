@@ -78,8 +78,6 @@
           <input type="number" id="cAg" step="0.00001" min="0" value="0.02" oninput="calc()"></div>
         <div><label>Volume da amostra titulada (mL)</label>
           <input type="number" id="vAm" step="0.01" min="0" value="50" oninput="calc()"></div>
-        <div><label>CN⁻ por Ag⁺ (Liebig = 2)</label>
-          <input type="number" id="ratio" step="0.1" min="0" value="2" oninput="calc()"></div>
       </div>
       <div class="chkrow">
         <input type="checkbox" id="dil" onchange="toggleDil();calc()">
@@ -209,15 +207,15 @@
   // ---- Titulação ----
   function calc(){
     const err = document.getElementById('err');
-    const vAg = val('vAg'), cAg = val('cAg'), vAm = val('vAm'), ratio = val('ratio');
+    const vAg = val('vAg'), cAg = val('cAg'), vAm = val('vAm');
     const setTit = (a,b,c) => { r_mol.textContent=a; r_cn.textContent=b; r_nacn.textContent=c; };
-    if (!(vAg > 0 && cAg > 0 && vAm > 0 && ratio > 0)) {
-      err.textContent = 'Preencha volume de AgNO₃, concentração, volume da amostra e a razão.';
+    if (!(vAg > 0 && cAg > 0 && vAm > 0)) {
+      err.textContent = 'Preencha volume de AgNO₃, concentração e volume da amostra.';
       setTit('—','—','—'); return;
     }
     err.textContent = '';
     const nAg = cAg * (vAg / 1000);
-    const nCN = ratio * nAg;
+    const nCN = 2 * nAg;
     const cTit = nCN / (vAm / 1000);
     setTit(molL(cTit), br(cTit * MW_CN * 1000, 4), br(cTit * MW_NACN * 1000, 4));
 
