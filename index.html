@@ -47,6 +47,11 @@
   .tabs{display:flex;gap:8px;margin-top:16px}
   .tab{flex:1;padding:11px;border:none;border-radius:8px;background:#eef1f6;color:#445;font-weight:700;cursor:pointer;font-size:14px}
   .tab.active{background:var(--navy);color:#fff}
+  .eq{background:#f6f8fc;border:1px solid var(--line);border-radius:8px;padding:10px 14px;margin:8px 0;font-size:15px;color:var(--navy);display:flex;flex-wrap:wrap;align-items:center;gap:6px;line-height:1.5}
+  .eq sub{font-size:11px}
+  .frac{display:inline-flex;flex-direction:column;text-align:center;margin:0 4px}
+  .frac .num{border-bottom:2px solid var(--navy);padding:0 8px}
+  .frac .den{padding:2px 8px 0}
 </style>
 </head>
 <body>
@@ -117,6 +122,20 @@
         <div class="metric teal"><div class="v" id="o_nacn">—</div><div class="l">ppm NaCN</div></div>
       </div>
     </div>
+
+    <div class="card">
+      <h2>📐 Equações usadas (titulação)</h2>
+      <div class="eq">CN⁻ (mol/L) =
+        <span class="frac"><span class="num">2 · C<sub>AgNO₃</sub> · V<sub>AgNO₃</sub></span><span class="den">V<sub>amostra</sub></span></span>
+        × fator<sub>dil.</sub></div>
+      <div class="eq">ppm CN⁻ = CN (mol/L) × 26,018 × 1000</div>
+      <div class="eq">ppm NaCN = CN (mol/L) × 49,008 × 1000</div>
+      <div class="eq">% (m/v) = ppm ÷ 10.000</div>
+      <div class="eq">fator<sub>dil.</sub> =
+        <span class="frac"><span class="num">V<sub>total</sub></span><span class="den">V<sub>alíquota</sub></span></span>
+        &nbsp;·&nbsp; C<sub>original</sub> = C<sub>titulada</sub> × fator</div>
+      <div class="hint">O “× 2” vem da reação: 1 Ag⁺ titula 2 CN⁻ (Liebig).</div>
+    </div>
   </div>
 
   <!-- ===================== ABA CONVERSÕES ===================== -->
@@ -141,9 +160,12 @@
       </div>
     </div>
 
-    <div class="note card">
-      <b>Como converte:</b> mol/L = ppm ÷ (1000 × massa molar). &nbsp; % (m/v) = ppm ÷ 10.000
-      (considera solução aquosa diluída, densidade ≈ 1 → <b>1% = 10.000 ppm</b>).
+    <div class="card">
+      <h2>📐 Equações usadas (conversões)</h2>
+      <div class="eq">mol/L =
+        <span class="frac"><span class="num">ppm</span><span class="den">1000 × massa molar</span></span></div>
+      <div class="eq">% (m/v) = ppm ÷ 10.000</div>
+      <div class="hint">% considera solução aquosa diluída (densidade ≈ 1) → <b>1% = 10.000 ppm</b>.</div>
     </div>
   </div>
 
