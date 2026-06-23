@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Registro de Testes — Detox (CN⁻ × AgNO₃)</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<style>
+  :root{--navy:#16243f;--orange:#e8552d;--teal:#2e9e8f;--bg:#eef1f6;--line:#d8dde6;--muted:#7b8794}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Tahoma,Verdana,sans-serif;background:var(--bg);color:var(--navy);padding:20px 12px}
+  .wrap{max-width:1000px;margin:0 auto}
+  .card{background:#fff;border-radius:14px;box-shadow:0 6px 24px rgba(20,40,80,.08);padding:20px;margin-bottom:16px;border:1px solid #eef0f4}
+  h1{font-size:20px}h1 .b{color:var(--orange)}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:4px}
+  h2{font-size:15px;margin-bottom:12px;color:var(--navy)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+  label{display:block;font-size:12px;color:var(--muted);font-weight:600;margin-bottom:4px}
+  input,select{width:100%;padding:9px;border:1px solid var(--line);border-radius:7px;font-size:14px;background:#fafbfc}
+  input:focus,select:focus{outline:none;border-color:var(--orange);background:#fff}
+  input[readonly]{background:#eef1f6;font-weight:700;color:var(--navy)}
+  .btn{border:none;border-radius:7px;padding:9px 14px;font-weight:700;cursor:pointer;color:#fff;font-size:14px}
+  .navy{background:var(--navy)}.orange{background:var(--orange)}.teal{background:var(--teal)}.ghost{background:#eef1f6;color:#445}
+  .danger{background:#dc3545}.btn.sm{padding:5px 9px;font-size:12px}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}
+  .scroll{overflow-x:auto}
+  th{background:var(--navy);color:#fff;padding:8px;text-align:left;white-space:nowrap}
+  td{padding:8px;border-bottom:1px solid #eceff3;white-space:nowrap}
+  tr:hover td{background:#f6f8fc}
+  .hidden{display:none}
+  .hint{font-size:12px;color:var(--muted);margin-top:6px}
+  .pill{background:#fff3cd;color:#8a6100;border-radius:10px;padding:3px 10px;font-size:13px;font-weight:700}
+  .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:50}
+  .addline{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;align-items:end}
+  .dilbox{margin-top:10px;padding:12px;border:1px dashed var(--line);border-radius:8px;background:#fafbfe}
+  .cmplist{display:flex;flex-wrap:wrap;gap:10px 16px;margin-bottom:14px}
+  .cmpitem{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--navy);cursor:pointer}
+  .cmpitem input{width:16px;height:16px}
+  .sw{width:14px;height:14px;border-radius:3px;display:inline-block}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="card">
+    <h1>🧪 Registro de Testes <span class="b">— Detox (PGDETOX)</span></h1>
+    <div class="sub">Titulação de CN⁻ com AgNO₃ (Liebig) · cálculo automático de CN⁻ e NaCN · salva no navegador</div>
+    <div class="row-actions">
+      <select id="testSel" onchange="selectTest(this.value)" style="max-width:340px"></select>
+      <button class="btn orange" onclick="newTest()">+ Novo teste</button>
+      <button class="btn ghost" onclick="exportXlsx()">⬇️ Exportar Excel</button>
+      <button class="btn danger sm" onclick="deleteTest()">🗑 Excluir teste</button>
+    </div>
+  </div>
+
+  <!-- Cabeçalho do teste -->
+  <div class="card" id="hdrCard">
+    <h2>Dados do teste</h2>
+    <div class="grid">
+      <div><label>Identificação do teste</label><input id="h_nome" oninput="updHdr()" placeholder="Ex: Teste 1 — 350 g/t"></div>
+      <div><label>Data</label><input type="date" id="h_data" oninput="updHdr()"></div>
+      <div><label>Densidade (g/mL ou kg/L)</label><input type="number" step="0.0001" id="h_dens" oninput="updHdr()" placeholder="Ex: 1,30"></div>
+      <div><label>Conc. de sólidos (%)</label><input type="number" step="0.01" id="h_psol" oninput="updHdr()" placeholder="Ex: 40"></div>
+      <div><label>Volume da amostra (mL)</label><input type="number" step="0.01" id="h_vol" oninput="updHdr()" placeholder="Ex: 2538"></div>
+      <div><label>Massa da amostra (kg)</label><input type="number" step="0.0001" id="h_massa" oninput="updHdr()" placeholder="Ex: 3,30"></div>
+      <div><label>Massa de sólidos (kg) — calculada</label><input id="h_msol" readonly></div>
+      <div><label>Dose PGDETOX (g/ton de sólidos)</label><input type="number" step="0.01" id="h_dose" oninput="updHdr()" placeholder="Ex: 350"></div>
+      <div><label>Massa de PGDETOX a dosar (g) — calc.</label><input id="h_pg" readonly></div>
+      <div><label>Massa de PGDETOX pesada (g) — real</label><input type="number" step="0.0001" id="h_pgreal" oninput="updHdr()" placeholder="Ex: 0,798"></div>
+      <div><label>Dose real (g/ton) — calc.</label><input id="h_dosereal" readonly></div>
+      <div><label>Concentração do AgNO₃ (mol/L)</label><input type="number" step="0.00001" id="h_cag" oninput="updHdr()" placeholder="Ex: 0,02"></div>
+      <div><label>CN:Ag (Liebig = 2)</label><input type="number" step="0.1" id="h_ratio" value="2" oninput="updHdr()"></div>
+      <div><label>CN WAD (ppm) — 1 por teste</label><input type="number" step="0.0001" id="h_wad" oninput="updHdr()" placeholder="Ex: 12,5"></div>
+    </div>
+  </div>
+
+  <!-- Pontos -->
+  <div class="card" id="ptsCard">
+    <h2>Pontos de titulação <span class="pill" id="wadTag"></span></h2>
+    <div class="addline">
+      <div><label>Tempo (min)</label><input type="number" step="1" id="p_t" placeholder="0, 30, 60…"></div>
+      <div><label>AgNO₃ gasto (mL)</label><input type="number" step="0.01" id="p_vag" placeholder="Ex: 0,51"></div>
+      <div><label>Volume titulado (mL)</label><input type="number" step="0.01" id="p_vtit" placeholder="Ex: 10"></div>
+      <div style="display:flex;align-items:center;gap:8px;padding-bottom:4px">
+        <input type="checkbox" id="p_dil" style="width:18px;height:18px" onchange="togglePDil()">
+        <label for="p_dil" style="margin:0">Diluiu?</label>
+      </div>
+    </div>
+    <div class="dilbox hidden" id="pdilbox">
+      <div class="addline">
+        <div><label>Alíquota (mL)</label><input type="number" step="0.01" id="p_aliq" placeholder="Ex: 5"></div>
+        <div><label>Volume total após diluir (mL)</label><input type="number" step="0.01" id="p_total" placeholder="Ex: 50"></div>
+      </div>
+      <div class="hint">Fator de diluição = volume total ÷ alíquota (aplicado ao resultado).</div>
+    </div>
+    <div class="row-actions">
+      <button class="btn navy" onclick="addPoint()">+ Adicionar ponto</button>
+    </div>
+
+    <div class="scroll">
+      <table id="ptsTable"></table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Gráfico — CN⁻ livre (ppm) × tempo <span class="sub">(teste atual)</span></h2>
+    <div style="height:340px;position:relative"><canvas id="chart"></canvas></div>
+  </div>
+
+  <div class="card">
+    <h2>Comparativo — curvas por data/teste</h2>
+    <div class="cmplist" id="cmpList"></div>
+    <div style="height:380px;position:relative"><canvas id="chartAll"></canvas></div>
+    <div class="hint">Cada linha é um teste salvo (CN⁻ livre × tempo). Útil para comparar dosagens e datas.</div>
+  </div>
+
+  <div class="card hint">
+    <b>Como calcula:</b> CN⁻ (mol/L) = 2 × C(AgNO₃) × V(AgNO₃) ÷ V(titulado), × fator de diluição.
+    ppm CN⁻ = mol/L × 26,018 × 1000 · ppm NaCN = mol/L × 49,008 × 1000 · % = ppm ÷ 10.000.
+    Massa de sólidos = % sólidos × massa da amostra. PGDETOX (g) = dose × massa de sólidos (em ton).<br>
+    ⚠️ Cianeto é perigoso — confira os valores com a rotina/laboratório. Dados salvos só neste navegador.
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+
+<script>
+  const MW_CN = 26.018, MW_NACN = 49.008, KEY = 'detox_db';
+  const CORES = ['#e8552d','#2e9e8f','#1a2b4a','#f39c12','#3498db','#9b59b6','#2ecc71','#e91e63','#16a085','#d35400'];
+  let DB = load();
+  let cur = DB.tests[0]?.id || null;
+  let chart = null, chartAll = null;
+
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {tests:[]}; }catch{ return {tests:[]}; } }
+  function save(){ localStorage.setItem(KEY, JSON.stringify(DB)); }
+  const val = id => { const v = (document.getElementById(id).value||'').toString().replace(',','.'); const n = parseFloat(v); return isNaN(n)?0:n; };
+  const br = (n,d) => isFinite(n) ? n.toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
+  const SUP={'-':'⁻','+':'','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  const molL = v => { if(!isFinite(v)||v===0) return '0'; const [m,e]=v.toExponential(4).split('e'); return m.replace('.',',')+' × 10'+[...e].map(c=>SUP[c]??c).join(''); };
+  function toast(m){ const t=document.getElementById('toast'); t.textContent=m; t.classList.remove('hidden'); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.add('hidden'),2200); }
+
+  const curTest = () => DB.tests.find(t => t.id === cur);
+
+  function newTest(){
+    const id = 'T' + Date.now();
+    DB.tests.unshift({ id, nome:'Novo teste', data:'', dens:0, psol:0, vol:0, massa:0, dose:350, cag:0, ratio:2, wad:null, pontos:[] });
+    cur = id; save(); render(); toast('Teste criado');
+  }
+  function deleteTest(){
+    if(!cur) return;
+    if(!confirm('Excluir este teste e todos os seus pontos?')) return;
+    DB.tests = DB.tests.filter(t => t.id !== cur);
+    cur = DB.tests[0]?.id || null; save(); render();
+  }
+  function selectTest(id){ cur = id; render(); }
+
+  // calcula massa de sólidos (kg) e massa de PGDETOX (g)
+  function massaSolidos(t){ return (t.massa||0) * (t.psol||0)/100; }       // kg
+  function massaPG(t){ return (t.dose||0) * massaSolidos(t) / 1000; }       // g (dose g/ton, sólidos kg)
+
+  function updHdr(){
+    const t = curTest(); if(!t) return;
+    t.nome = document.getElementById('h_nome').value;
+    t.data = document.getElementById('h_data').value;
+    t.dens = val('h_dens'); t.psol = val('h_psol'); t.vol = val('h_vol'); t.massa = val('h_massa');
+    t.dose = val('h_dose'); t.cag = val('h_cag'); t.ratio = val('h_ratio') || 2;
+    const w = document.getElementById('h_wad').value; t.wad = (w==='' ? null : val('h_wad'));
+    const _pgr = document.getElementById('h_pgreal').value; t.pgreal = (_pgr==='' ? null : val('h_pgreal'));
+    const _sol = massaSolidos(t);
+    document.getElementById('h_msol').value = br(_sol, 4) + ' kg';
+    document.getElementById('h_pg').value = br(massaPG(t), 4) + ' g';
+    document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol, 2) + ' g/ton') : '';
+    document.getElementById('wadTag').textContent = t.wad!=null ? ('CN WAD: ' + br(t.wad,4) + ' ppm') : '';
+    save(); renderPoints();
+    // atualiza o nome no seletor sem perder foco
+    const opt = document.querySelector(`#testSel option[value="${t.id}"]`); if(opt) opt.textContent = labelTest(t);
+  }
+
+  function calcPoint(t, p){
+    const fator = (p.dil && p.aliq>0 && p.total>0) ? (p.total/p.aliq) : 1;
+    const cMol = (p.vtit>0) ? (t.ratio * t.cag * p.vag / p.vtit) * fator : 0;
+    return { fator, cMol, cnppm: cMol*MW_CN*1000, cnpct: cMol*MW_CN*1000/10000, naclppm: cMol*MW_NACN*1000, naclpct: cMol*MW_NACN*1000/10000 };
+  }
+
+  function togglePDil(){ document.getElementById('pdilbox').classList.toggle('hidden', !document.getElementById('p_dil').checked); }
+
+  function addPoint(){
+    const t = curTest(); if(!t){ toast('Crie/seleciona um teste'); return; }
+    if(!(t.cag>0)){ toast('Defina a concentração do AgNO₃ no cabeçalho'); return; }
+    const vag = val('p_vag'), vtit = val('p_vtit');
+    if(!(vag>0 && vtit>0)){ toast('Informe mL de AgNO₃ e volume titulado'); return; }
+    const dil = document.getElementById('p_dil').checked;
+    t.pontos.push({ tempo: val('p_t'), vag, vtit, dil, aliq: val('p_aliq'), total: val('p_total') });
+    t.pontos.sort((a,b)=>(a.tempo||0)-(b.tempo||0));
+    save();
+    ['p_t','p_vag','p_vtit','p_aliq','p_total'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('p_dil').checked=false; togglePDil();
+    renderPoints(); toast('Ponto adicionado ✓');
+  }
+  function delPoint(i){ const t=curTest(); if(!t) return; if(!confirm('Excluir este ponto?')) return; t.pontos.splice(i,1); save(); renderPoints(); }
+  window.delPoint = delPoint;
+
+  function renderPoints(){
+    const t = curTest();
+    const tb = document.getElementById('ptsTable');
+    if(!t){ tb.innerHTML=''; return; }
+    let h = `<tr><th>Tempo (min)</th><th>AgNO₃ (mL)</th><th>Vol. tit. (mL)</th><th>Diluição</th>
+      <th>CN⁻ mol/L</th><th>CN⁻ ppm</th><th>CN⁻ %</th><th>NaCN ppm</th><th>NaCN %</th><th></th></tr>`;
+    t.pontos.forEach((p,i)=>{
+      const c = calcPoint(t,p);
+      h += `<tr><td>${br(p.tempo,0)}</td><td>${br(p.vag,2)}</td><td>${br(p.vtit,2)}</td>
+        <td>${p.dil ? ('×'+br(c.fator,2)) : '—'}</td>
+        <td>${molL(c.cMol)}</td><td>${br(c.cnppm,4)}</td><td>${br(c.cnpct,4)}</td>
+        <td>${br(c.naclppm,4)}</td><td>${br(c.naclpct,4)}</td>
+        <td><button class="btn danger sm" onclick="delPoint(${i})">🗑</button></td></tr>`;
+    });
+    if(!t.pontos.length) h += `<tr><td colspan="10" style="text-align:center;color:#999">Nenhum ponto ainda.</td></tr>`;
+    tb.innerHTML = h;
+    drawChart(t);
+    drawAllChart();
+  }
+
+  function drawChart(t){
+    const ctx = document.getElementById('chart');
+    if(typeof Chart === 'undefined'){ return; }
+    const pts = [...t.pontos].sort((a,b)=>(a.tempo||0)-(b.tempo||0));
+    const labels = pts.map(p=>p.tempo);
+    const cn = pts.map(p=>calcPoint(t,p).cnppm);
+    const ds = [{ label:'CN⁻ livre (ppm)', data:cn, borderColor:'#e8552d', backgroundColor:'#e8552d', borderWidth:2, tension:.3 }];
+    if(t.wad!=null && labels.length) ds.push({ label:'CN WAD (ppm)', data:labels.map(()=>t.wad), borderColor:'#2e9e8f', borderDash:[6,4], borderWidth:2, pointRadius:0 });
+    if(chart) chart.destroy();
+    if(!labels.length){ if(chart){chart.destroy();chart=null;} return; }
+    chart = new Chart(ctx,{ type:'line', data:{labels,datasets:ds},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top'}},
+        elements:{point:{radius:4,hoverRadius:7}},
+        scales:{ x:{title:{display:true,text:'tempo (min)'}}, y:{beginAtZero:true,title:{display:true,text:'ppm'}} } } });
+  }
+
+  window.toggleCmp = (id, on) => { const t = DB.tests.find(x=>x.id===id); if(t){ t.comparar = on; save(); drawAllChart(); } };
+
+  function renderCmpList(){
+    const box = document.getElementById('cmpList');
+    if(!box) return;
+    box.innerHTML = DB.tests.map((t,i)=>{
+      const on = t.comparar !== false;
+      return `<label class="cmpitem"><input type="checkbox" ${on?'checked':''} onchange="toggleCmp('${t.id}',this.checked)">
+        <span class="sw" style="background:${CORES[i%CORES.length]}"></span>${labelTest(t)}</label>`;
+    }).join('') || '<span class="hint">Nenhum teste salvo ainda.</span>';
+  }
+
+  function drawAllChart(){
+    renderCmpList();
+    const ctx = document.getElementById('chartAll');
+    if(typeof Chart === 'undefined' || !ctx) return;
+    const datasets = DB.tests.map((t,i)=>({
+      label: labelTest(t),
+      _vis: t.comparar !== false,
+      data: [...t.pontos].sort((a,b)=>(a.tempo||0)-(b.tempo||0)).map(p=>({x:p.tempo, y:calcPoint(t,p).cnppm})),
+      borderColor: CORES[i%CORES.length], backgroundColor: CORES[i%CORES.length], borderWidth:2, tension:.3
+    })).filter(d=>d._vis && d.data.length);
+    if(chartAll) chartAll.destroy();
+    if(!datasets.length){ chartAll=null; return; }
+    chartAll = new Chart(ctx,{ type:'line', data:{datasets},
+      options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{legend:{position:'top'}},
+        elements:{point:{radius:4,hoverRadius:7}},
+        scales:{ x:{type:'linear',title:{display:true,text:'tempo (min)'}}, y:{beginAtZero:true,title:{display:true,text:'CN⁻ livre (ppm)'}} } } });
+  }
+
+  function fillHdr(){
+    const t = curTest();
+    const set=(id,v)=>document.getElementById(id).value = (v==null?'':v);
+    if(!t){ ['h_nome','h_data','h_dens','h_psol','h_vol','h_massa','h_msol','h_dose','h_pg','h_pgreal','h_dosereal','h_cag','h_ratio','h_wad'].forEach(i=>set(i,'')); return; }
+    set('h_nome',t.nome); set('h_data',t.data); set('h_dens',t.dens||''); set('h_psol',t.psol||'');
+    set('h_vol',t.vol||''); set('h_massa',t.massa||''); set('h_dose',t.dose||''); set('h_cag',t.cag||'');
+    set('h_ratio',t.ratio||2); set('h_wad', t.wad==null?'':t.wad); set('h_pgreal', t.pgreal==null?'':t.pgreal);
+    const _sol = massaSolidos(t);
+    document.getElementById('h_msol').value = br(_sol,4)+' kg';
+    document.getElementById('h_pg').value = br(massaPG(t),4)+' g';
+    document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol,2)+' g/ton') : '';
+    document.getElementById('wadTag').textContent = t.wad!=null ? ('CN WAD: '+br(t.wad,4)+' ppm') : '';
+  }
+
+  const labelTest = t => (t.nome||'(sem nome)') + (t.data? ' — '+t.data.split('-').reverse().join('/') : '');
+
+  function render(){
+    const sel = document.getElementById('testSel');
+    sel.innerHTML = DB.tests.map(t=>`<option value="${t.id}"${t.id===cur?' selected':''}>${labelTest(t)}</option>`).join('') || '<option>(nenhum teste)</option>';
+    fillHdr(); renderPoints(); drawAllChart();
+  }
+
+  // ---- Exportar Excel ----
+  async function exportXlsx(){
+    try{
+      toast('Gerando Excel…');
+      const XLSX = await import('https://esm.sh/xlsx@0.18.5');
+      const wb = XLSX.utils.book_new();
+      const resumo = DB.tests.map(t=>({
+        Teste:t.nome, Data:t.data, 'Densidade':t.dens, '% Sólidos':t.psol, 'Volume (mL)':t.vol,
+        'Massa amostra (kg)':t.massa, 'Massa sólidos (kg)':+massaSolidos(t).toFixed(4),
+        'Dose alvo (g/ton sól.)':t.dose, 'PGDETOX teórico (g)':+massaPG(t).toFixed(4),
+        'PGDETOX pesado (g)':t.pgreal, 'Dose real (g/ton)': (t.pgreal!=null && massaSolidos(t)>0) ? +(t.pgreal*1000/massaSolidos(t)).toFixed(2) : null,
+        'AgNO3 (mol/L)':t.cag, 'CN:Ag':t.ratio, 'CN WAD (ppm)':t.wad
+      }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(resumo.length?resumo:[{Teste:'(vazio)'}]), 'Testes');
+      const pontos = [];
+      DB.tests.forEach(t=>t.pontos.forEach(p=>{ const c=calcPoint(t,p);
+        pontos.push({ Teste:t.nome, 'Tempo (min)':p.tempo, 'AgNO3 (mL)':p.vag, 'Vol. tit. (mL)':p.vtit,
+          'Fator dil.':c.fator, 'CN- mol/L':+c.cMol.toFixed(6), 'CN- ppm':+c.cnppm.toFixed(4), 'CN- %':+c.cnpct.toFixed(4),
+          'NaCN ppm':+c.naclppm.toFixed(4), 'NaCN %':+c.naclpct.toFixed(4), 'CN WAD (ppm)':t.wad }); }));
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pontos.length?pontos:[{Teste:'(vazio)'}]), 'Pontos');
+      XLSX.writeFile(wb, 'testes-detox.xlsx');
+      toast('Excel gerado ✓');
+    }catch(e){ console.error(e); toast('Sem internet p/ gerar agora. Tente conectado.'); }
+  }
+
+  if(!cur) newTest(); else render();
+</script>
+</body>
+</html>
