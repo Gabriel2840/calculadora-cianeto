@@ -169,7 +169,7 @@
     const w = document.getElementById('h_wad').value; t.wad = (w==='' ? null : val('h_wad'));
     const _pgr = document.getElementById('h_pgreal').value; t.pgreal = (_pgr==='' ? null : val('h_pgreal'));
     const _sol = massaSolidos(t);
-    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(t.vol,2) + ' mL') : '';
+    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(t.vol,2) + ' mL  (' + br(t.vol/1000,4) + ' L)') : '';
     document.getElementById('h_msol').value = br(_sol, 4) + ' kg';
     document.getElementById('h_pg').value = br(massaPG(t), 4) + ' g';
     document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol, 2) + ' g/ton') : '';
@@ -280,7 +280,7 @@
     set('h_ratio',t.ratio||2); set('h_wad', t.wad==null?'':t.wad); set('h_pgreal', t.pgreal==null?'':t.pgreal);
     const _sol = massaSolidos(t);
     const _vol = (t.dens>0) ? (t.massa*1000/t.dens) : 0;
-    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(_vol,2)+' mL') : '';
+    document.getElementById('h_vol').value = (t.dens>0 && t.massa>0) ? (br(_vol,2)+' mL  ('+br(_vol/1000,4)+' L)') : '';
     document.getElementById('h_msol').value = br(_sol,4)+' kg';
     document.getElementById('h_pg').value = br(massaPG(t),4)+' g';
     document.getElementById('h_dosereal').value = (t.pgreal!=null && _sol>0) ? (br(t.pgreal*1000/_sol,2)+' g/ton') : '';
